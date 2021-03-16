@@ -13,14 +13,10 @@ export interface State {
     year: number
     monthIndex: number,
     dayName: Array<string>,
-    DaysnMonth: number
+    DaysnMonth: number,
     dateObject: any,
-    daysinmonth: any,
-    Rows: Array<any>,
-    calender: Array<any>,
+    daysinmonth: number,
     cells: Array<any>,
-    StartofMonth: any,
-    EndofMonth: any
 
 }
 
@@ -34,18 +30,14 @@ class Schedules extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            StartofMonth: "",
-            EndofMonth: "",
-            calender: [],
-            cells: [],
-            Rows: [],
-            daysinmonth: [],
-            dateObject: moment(),
-            dayName: moment().localeData().weekdays(),
             month: moment().localeData().months(),
             year: moment().get("year"),
             monthIndex: moment().get("month"),
-            DaysnMonth: 0,
+            dayName: moment().localeData().weekdays(),
+            DaysnMonth:0,
+            dateObject: moment(),
+            daysinmonth: 0,
+            cells: []
 
 
 
@@ -54,91 +46,53 @@ class Schedules extends React.Component<Props, State> {
         };
     }
 
-
-    componentDidUpdate() {
-
-
-    }
-
     componentDidMount() {
 
 
-        this.cal()
-        //this.EndDays();  
-
+        this.calender()
 
 
     }
 
 
-    EndDays = () => {
+    EndDays = (colums: Array<any>, DaysnMonth: number, ChoosesMonthFirstDay: string) => {
 
-
-        console.log('testing ')
-
-        //כמות הימים בחודש של לפני
-        var DaysnMonth = moment(this.state.year + '-' + moment().month(this.state.month[this.state.monthIndex - 1]).format("MM"), "YYYY-MM").daysInMonth();
-
-
-
-        //מספר היום שמתחיל החודש הזה
-        var ChoosesMonthFirstDay = moment()
-            .month(this.state.month[this.state.monthIndex])
-            .date(1).hours(0).minutes(0).seconds(0).milliseconds(0).format('d');
-
-        console.log(this.state.month[this.state.monthIndex])
-        console.log(this.state.monthIndex)
-
-
+     
 
         var lastDaysMonth = DaysnMonth - parseInt(ChoosesMonthFirstDay) + 1
-
-        // console.log(DaysnMonth)
-        console.log(ChoosesMonthFirstDay)
-        // console.log(lastDaysMonth)
-        // console.log(monthEndDay)
-        // console.log(endDay)
-        console.log(this.state.monthIndex)
-
 
 
 
         for (var e = lastDaysMonth; e < DaysnMonth + 1; e++) {
 
-
-            this.state.cells.push(
-                <p style={{color:'silver'}}>{e}</p>
-            )
-
+            colums.push(<td key={e} style={{ color: "silver"}}>{e}</td>)
 
         }
 
-        this.setState({
-            cells: this.state.cells
+   
 
-        })
-
-        console.log(this.state.cells)
 
 
     }
 
-    DaysOFMonth = (DaysnMonth: number) => {
+    DaysOFMonth = (colums: Array<any>, DaysnMonth: number) => {
 
 
-    var currentMonth = moment().get("month");
 
-    console.log(currentMonth)
+        var currentMonth = moment().get("month");
+
+console.log("DaysnMonth",DaysnMonth)
+
 
         for (var r = 1; r < DaysnMonth + 1; r++) {
 
 
-            this.state.cells.push(r)
+            colums.push(<td key={r}>{r}</td>)
 
-            if (r == parseInt(moment().format("D")) && currentMonth==this.state.monthIndex) {
+            if (r === parseInt(moment().format("D")) && currentMonth === this.state.monthIndex) {
 
                 console.log(r)
-                this.state.cells.splice(r + 1, 1, <div style={{ border: "solid 1px red" }}>{parseInt(moment().format("D"))}</div>)
+                colums[r] = <td key={colums[r]} style={{backgroundColor:"aliceblue"}}>{r}</td>
 
             }
 
@@ -146,85 +100,146 @@ class Schedules extends React.Component<Props, State> {
 
         }
 
-
     }
 
-    FirstDays = (dateObject: any, endDay: string) => {
+    FirstDays = (colums: Array<any>, endDay: string) => {
 
 
-        var monthEndDay = moment().month(this.state.month[this.state.monthIndex]).date(1).hours(0).minutes(0).seconds(0).milliseconds(0).format('d');
-
-        var endDayToNumber = parseInt(endDay)
-        console.log(endDayToNumber)
-
-        for (var n = parseInt(monthEndDay); n < 7 - parseInt(monthEndDay); n++) {
-            console.log(n)
+        var length = 42-colums.length;
 
 
 
-            this.state.cells.push(   <p style={{color:'silver'}}>{n}</p>)
+        for (var n = 1; n < length+1; n++) {
+
+
+            colums.push(<td key={n} style={{color: "silver"}}>{n}</td>)
 
         }
 
 
 
-
     }
 
-    cal = () => {
 
+    calender = () => {
+
+
+        var colums: Array<any> = []
+
+
+
+        var DaysnLastMonth = moment(this.state.year + '-' + moment().month(this.state.month[this.state.monthIndex - 1]).format("MM"), "YYYY-MM").daysInMonth();
         var DaysnMonth = moment(this.state.year + '-' + moment().month(this.state.month[this.state.monthIndex]).format("MM"), "YYYY-MM").daysInMonth();
+        var endDay = moment(this.state.dateObject).endOf("month").format("d");
 
-        let dateObject = this.state.dateObject;
+        var ChoosesMonthFirstDay = moment().month(this.state.month[this.state.monthIndex]).date(1).hours(0).minutes(0).seconds(0).milliseconds(0).format('d');
 
-        let endDay = moment(dateObject)
-            .endOf("month")
-            .format("d");
 
-        this.EndDays()
-        this.DaysOFMonth(DaysnMonth)
-        this.FirstDays(dateObject, endDay)
+
+        this.setState({
+            daysinmonth: DaysnMonth
+        });
+
+
+
+        this.EndDays(colums, DaysnLastMonth, ChoosesMonthFirstDay);
+        this.DaysOFMonth(colums, DaysnMonth);
+        this.FirstDays(colums, endDay);
+
+        console.log("colums length",colums.length)
+
+        var setcell = 0
+        var setlength = 7
+
+        this.sortCalender(setlength, setcell, colums);
+
+        while (setlength !== 42) {
+
+            setcell += 7
+            setlength += 7
+
+            this.sortCalender(setlength, setcell, colums);
+
+        }
+
+
 
     }
 
 
+    sortCalender = (length: number, setcell: number, colums: Array<any>) => {
+
+
+
+        var c = []
+        for (var cell = setcell; cell < length; cell++) {
+
+
+            c.push(colums[cell])
+
+
+        }
+
+
+        this.state.cells.push(<tr key={length}>{c}</tr>)
+
+        
+
+
+
+
+    }
 
 
     NextMonth = () => {
+        var list = this.state.cells
+       var index = this.state.monthIndex;
+
+     list.length = 0;
+
+        
+
+        if (this.state.monthIndex !==11) {
 
 
-        this.state.cells.length = 0
+            index+=1
 
+            this.setState({
+                cells: this.state.cells,
+                monthIndex: index,
+                DaysnMonth: this.state.daysinmonth,
+ },()=>{
 
-        this.state.monthIndex == 11 ?
+this.calender();
+
+ });
+           
+
+        } else {
+
             this.setState({
                 monthIndex: 0,
                 year: this.state.year + 1,
-                DaysnMonth: moment(this.state.year + '-' + moment().month(this.state.month[this.state.monthIndex]).format("MM"), "YYYY-MM").daysInMonth(),
+                DaysnMonth: this.state.daysinmonth,
+
+            },()=>{
+
+this.calender();
 
             })
 
-            :
-            this.setState({
-                cells: this.state.cells,
-                monthIndex: this.state.monthIndex + 1,
-                DaysnMonth: moment(this.state.year + '-' + moment().month(this.state.month[this.state.monthIndex]).format("MM"), "YYYY-MM").daysInMonth(),
-
-            });
-
-
-
-
-        this.cal()
-
+               }
 
     }
 
 
 
     LastMonth = () => {
+        var lastList=this.state.cells;
 
-        this.state.cells.length = 0
+        lastList.length=0;
+
+    
 
         this.state.monthIndex === 0 ?
 
@@ -235,6 +250,10 @@ class Schedules extends React.Component<Props, State> {
                 DaysnMonth: moment(this.state.year + '-' + moment().month(this.state.month[this.state.monthIndex]).format("MM"), "YYYY-MM").daysInMonth()
 
 
+            },()=>{
+
+                this.calender();
+
             }) :
 
             this.setState({
@@ -243,10 +262,13 @@ class Schedules extends React.Component<Props, State> {
                 DaysnMonth: moment(this.state.year + '-' + moment().month(this.state.month[this.state.monthIndex]).format("MM"), "YYYY-MM").daysInMonth()
 
 
-            })
+            },()=>{
 
 
-        this.cal()
+                this.calender();
+            });
+
+
     }
 
 
@@ -259,51 +281,64 @@ class Schedules extends React.Component<Props, State> {
     render() {
 
         return (
-            <div className="row container-fluid">
+            <div className="row">
 
-                        <div className="col-md-12">
+                <div className="col-md-12">
+                    <div className="row">
+                        <div className="col-md"><i className='fas fa-angle-left' style={{ fontSize: 36 }} onClick={() => this.LastMonth()}></i></div>
+                        <div className="col-md"><h3 className="current_month">{this.state.month[this.state.monthIndex]} {this.state.year}</h3> </div>
+                        <div className="col-md"><i className='fas fa-angle-right' style={{ fontSize: 36 }} onClick={() => this.NextMonth()}></i></div>
+
+                    </div>
+
+                    <div className="container">
                         <div className="row">
-                                <div className="col-md"><i className='fas fa-angle-left' style={{ fontSize: 36 }} onClick={() => this.LastMonth()}></i></div>
-                                <div className="col-md"><h3>{this.state.month[this.state.monthIndex]} {this.state.year}</h3> </div>
-                                <div className="col-md"><i className='fas fa-angle-right' style={{ fontSize: 36 }} onClick={() => this.NextMonth()}></i></div>
 
-                            </div>
+                            <table className='table table-bordered'>
 
+                                <thead>
 
-                            <div className="d-flex align-content-center flex-wrap">
+                                    <tr>
 
-                                {
-                                    this.state.dayName.map(days =>
+                                        {
+                                            this.state.dayName.map(days =>
 
-                                        <div key={days}   style={{ border: 'solid black 1px', width: "140px" }}>{days}</div>
+                                                <th key={days} scope='col'>{days}</th>
 
 
-                                    )
+                                            )
 
-                                }
-                            </div>
+                                        }
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
 
 
-                            <div className='calender  d-flex align-content-center flex-wrap'>
-                              
-                              {
-                                  this.state.cells.map((cell,index) =>
-                                  
-                                  <div   className={`text ${this.state.month[this.state.monthIndex]}`} style={{border:"solid 1px black",padding:"55px",width:"140px"}}>{cell}</div>)
-                                  
-                                  
-                              }
+                                    {
+                                        this.state.cells
 
-                                </div>
-                                     
- 
-                        
- 
+                                    }
 
+
+
+                                </tbody>
+
+
+                            </table>
 
                         </div>
 
+
                     </div>
+
+                
+
+                </div>
+
+            </div>
 
         );
     }
